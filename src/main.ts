@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import * as session from 'express-session';
 import * as passport from 'passport';
 import * as dotenv from 'dotenv';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   dotenv.config();
@@ -40,8 +41,15 @@ async function bootstrap() {
       return callback(new Error("Not allowed by cors"))
     },
     credentials: true, 
+    methods:'GET,POST,PUT,PATCH,DELETE,OPTIONS',
+    allowedHeaders:'Content-Type,Authorization',
   });
 
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true, 
+    transform: true,  
+   }));
 
   await app.listen(3000);
 }
