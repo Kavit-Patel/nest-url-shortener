@@ -15,7 +15,7 @@ async function bootstrap() {
       resave: false, 
       saveUninitialized: false, 
       cookie: {
-        maxAge: 600000, 
+        maxAge: 6000000, 
         httpOnly: true, 
         secure: process.env.NODE_ENV === 'production', 
       },
@@ -27,7 +27,17 @@ async function bootstrap() {
   app.use(passport.session());
 
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: (origin,callback)=>{
+      console.log("origin from:- ",origin)
+      if(!origin){
+        return callback(null,true)
+      }
+      const allowed_origins = process.env.ALLOWED_ORIGIN
+      if(allowed_origins.includes(origin)){
+        return callback(null,true)
+      }
+      return callback(new Error("Not allowed by cors"))
+    },
     credentials: true, 
   });
 

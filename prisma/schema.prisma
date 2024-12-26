@@ -22,14 +22,36 @@ model User {
 }
 
 model Url {
-  id         String   @id @default(cuid())
+  id         String      @id @default(cuid())
   longUrl    String
-  shortUrl   String   @unique
-  createdAt  DateTime @default(now())
+  shortUrl   String      @unique
+  alias      String      @unique
+  createdAt  DateTime    @default(now())
+  expiresAt  DateTime?
   clicks     Click[]
-  topic      String?
+  analytics  Analytics?
+  topicId    String
+  topic      Topic      @relation(fields: [topicId], references: [id])
   userId     String
-  user       User     @relation(fields: [userId], references: [id])
+  user       User        @relation(fields: [userId], references: [id])
+}
+
+model Topic {
+  id   String @id @default(cuid())
+  name String 
+  urls Url[]
+}
+
+model Analytics {
+  id           String   @id @default(cuid())
+  urlId        String   @unique
+  clicks       Int      @default(0)
+  uniqueVisits Int      @default(0)
+  countryStats Json?
+  deviceStats  Json?
+  lastAccessed DateTime?
+  createdAt    DateTime @default(now())
+  url          Url      @relation(fields: [urlId], references: [id])
 }
 
 model Click {
