@@ -14,15 +14,18 @@ export class UrlService {
     if(existsLongUrl){
       return {shortUrl:`${process.env.BASE_URL}/${existsLongUrl.alias}`,createdAt:existsLongUrl.createdAt}
     }
-    const existingTopic = topic && await this.prisma.user.findFirst({where:{id:userId,urls:{some:{topic:{name:topic}}}},select:{urls:{select:{topic:{select:{id:true}}}}}})
-    const topicId = existingTopic? existingTopic.urls[0]?.topic?.id: (await this.prisma.topic.create({data:{name:topic?topic:generateTopic()}})).id;
+    const currentTopicName = topic || generateTopic();
+    let currentTopic  = await this.prisma.topic.findFirst({where:{name:currentTopicName}})
+    if(!currentTopic){
+      currentTopic = await this.prisma.topic.create({data:{name:currentTopicName}})
+    }
     const newUrl = await this.prisma.url.create({
       data: {
         longUrl,
         shortUrl:randomUUID().slice(0,5),
         alias:customAlias || await generateMeaningfulAlias(longUrl,userId),
         userId,
-        topicId,
+        topicId:currentTopic.id,
       },
       include: {
          topic: true ,
