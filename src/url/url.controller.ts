@@ -3,6 +3,8 @@ import {
     Body,
     Controller,
     Get,
+    Headers,
+    Ip,
     Param,
     Post,
     Redirect,
@@ -30,12 +32,11 @@ import { LoggedInGuard } from 'src/auth/logged-in.auth.guard';
   
     @Get(':alias')
     @Redirect()
-    async redirectToLongUrl(@Req() req,@Param('alias') alias: string) {
-      const sessionUser = req.user?.id
-      if(!sessionUser){
-         throw new UnauthorizedException("You are not authorized !")
+    async redirectToLongUrl(@Req() req,@Param('alias') alias: string,@Ip() ip:string,@Headers('user-agent') userAgent:string|undefined) {
+      if(ip==="::1" || ip.includes("ffff")){
+        ip = "127.0.0.1"
       }
-      const lognUrl = await this.urlService.redirectToLongUrl(sessionUser,alias);
+      const lognUrl = await this.urlService.redirectToLongUrl(alias,ip,userAgent||"unknown");
       return {url:lognUrl,statusCode:302}
     }
   }
