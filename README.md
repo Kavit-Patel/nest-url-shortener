@@ -1,85 +1,97 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# NestJS URL Shortener
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A URL shortener backend built using NestJS, Prisma, and PostgreSQL. The application allows users to shorten URLs, track analytics, and perform authentication using Google OAuth.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Live Deployment
+The backend is deployed at: [https://nest-url-shortener.onrender.com](https://nest-url-shortener.onrender.com)
 
-## Description
+## Features
+- URL Shortening
+- Redirect to original URLs
+- Analytics tracking for shortened URLs
+- Google OAuth-based authentication
+- Session management
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Environment Variables
+To run the application, create a `.env` file in the root directory with the following variables:
 
-## Project setup
+```env
+# Database configuration
+DATABASE_URL="your postgresql database uri"
 
-```bash
-$ npm install
+# Session configuration
+SESSION_SECRET=your-secret-session-key
+
+# Google OAuth configuration
+GOOGLE_CLIENT_ID=google-id
+GOOGLE_CLIENT_SECRET=google-secret
+REDIRECT_URL=YOUR-BACKEND-URL/auth/google/callback
+
+# Application URLs
+BASE_URL=http://localhost:3000
+ALLOWED_ORIGIN= frontend-url-and-swagger-url-or-local-urls-LIKE-http://localhost:3000, http://localhost:4000
+FRONTEND_URL=http://localhost:3001
 ```
 
-## Compile and run the project
+## Prerequisites
+- Node.js (v16+)
+- PostgreSQL
+- NestJS CLI
 
-```bash
-# development
-$ npm run start
+## Installation
 
-# watch mode
-$ npm run start:dev
+1. Clone the repository:
+   git clone <repository-url>
+   cd <repository-folder>
 
-# production mode
-$ npm run start:prod
-```
 
-## Run tests
+2. Install dependencies:
+   npm install
 
-```bash
-# unit tests
-$ npm run test
 
-# e2e tests
-$ npm run test:e2e
+3. Set up the database:
+   - Ensure PostgreSQL is running.
+   - Update the `DATABASE_URL` in `.env` as needed.
+   - Run the Prisma migrations:
+     npx prisma migrate deploy/dev
 
-# test coverage
-$ npm run test:cov
-```
+4. Start the application:
+   npm run start:dev
 
-## Resources
+## API Documentation
+The Swagger documentation is available at:
+[http://localhost:3000/docs](http://localhost:3000/docs)
+`For protected routes you need to add connect.sid cookie value to Authorize tab, on the doc's page first.`
+`You have to login first in the browser and copy connect.sid from cookie and paste it on swagger page.`
 
-Check out a few resources that may come in handy when working with NestJS:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Usage
+### Endpoints
+### For example
+#### 1. Shorten URL
+- **POST** `/shorten`
+- **Description**: Create a shortened URL.
+- **Authentication**: Required
 
-## Support
+#### 2. Get URL Analytics
+- **GET** `/analytics/:alias`
+- **Description**: Retrieve analytics for a given alias.
+- **Authentication**: Required
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Feature Addition
+1. Fork the repository.
+2. Install dependencies.
+3. Set up local environment
+4. Create Feature branch Feat/feature-name
+5. Push the branch
+6. Create pull request
 
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Contributing
+Contributions are welcome! Please submit a pull request or open an issue for any bugs or feature requests.
 
 ## License
+This project is licensed under the MIT License.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+---
+
+For further queries, contact [Kavit G. Patel](mailto:kvpatel.er@gmail.com).
