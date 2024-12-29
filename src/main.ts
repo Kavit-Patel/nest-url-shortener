@@ -18,7 +18,9 @@ async function bootstrap() {
       saveUninitialized: false, 
       cookie: {
         maxAge: 6000000, 
-        httpOnly: true, 
+        httpOnly: process.env.HTTP_ONLY==="true", 
+        sameSite: process.env.SAMESITE==="none", 
+        secure:process.env.NODE_ENV === 'production'
       },
     }),
   );
@@ -29,6 +31,7 @@ async function bootstrap() {
 
   app.enableCors({
     origin: (origin,callback)=>{
+      console.log("origin :",origin)
       if(!origin){
         return callback(null,true)
       }
@@ -36,6 +39,7 @@ async function bootstrap() {
       if(allowed_origins.includes(origin)){
         return callback(null,true)
       }
+      console.log("origin not allowed by cors !")
       return callback(new Error("Not allowed by cors"))
     },
     credentials: true, 

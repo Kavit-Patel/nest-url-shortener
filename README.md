@@ -4,6 +4,7 @@ A URL shortener backend built using NestJS, Prisma, and PostgreSQL. The applicat
 
 ## Live Deployment
 The backend is deployed at: [https://nest-url-shortener.onrender.com](https://nest-url-shortener.onrender.com)
+Its frontend is deployed at:[https://next-url-shortener-with-graphical-performance-frontend.vercel.app/]
 
 ## Features
 - URL Shortening
