@@ -19,7 +19,7 @@ async function bootstrap() {
       cookie: {
         maxAge: 6000000, 
         httpOnly: process.env.HTTP_ONLY==="true", 
-        sameSite: process.env.SAMESITE==="none", 
+        sameSite: process.env.SAMESITE==="none"?"none":"lax", 
         secure:process.env.NODE_ENV === 'production'
       },
     }),

@@ -23,6 +23,7 @@ export class AuthController {
   @UseGuards(GoogleGuard)
   googleCallback(@Req() req, @Res() res) {
     const user = req.user
+    console.log(user.email)
     if(!user){
       throw new Error("User isn't present in google authentication callback")
     }
