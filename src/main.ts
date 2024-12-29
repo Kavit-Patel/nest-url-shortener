@@ -4,6 +4,7 @@ import * as session from 'express-session';
 import * as passport from 'passport';
 import * as dotenv from 'dotenv';
 import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   dotenv.config();
@@ -28,7 +29,6 @@ async function bootstrap() {
 
   app.enableCors({
     origin: (origin,callback)=>{
-      console.log("origin from:- ",origin)
       if(!origin){
         return callback(null,true)
       }
@@ -48,6 +48,16 @@ async function bootstrap() {
     forbidNonWhitelisted: true, 
     transform: true,  
    }));
+
+  const config = new DocumentBuilder()
+  .setTitle('API Documentation')
+  .setDescription('API endpoints for Url-Shortener')
+  .setVersion('1.0')
+  .addCookieAuth('connect.sid')
+  .build();
+
+const document = SwaggerModule.createDocument(app, config);
+SwaggerModule.setup('docs', app, document);
 
   await app.listen(3000);
 }

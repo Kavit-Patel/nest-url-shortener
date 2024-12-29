@@ -38,7 +38,14 @@ export class UrlService {
   }
 
   async redirectToLongUrl(alias:string,ip:string,userAgent:string){
-    const url = await this.prisma.url.findUnique({where:{alias}})
+    const url = await this.prisma.url.findFirst({
+      where:{
+        OR:[
+          {alias},
+          {shortUrl:alias}
+        ]
+      }
+    })
     if(!url){
       throw new NotFoundException()
     }
@@ -46,39 +53,15 @@ export class UrlService {
     const deviceName = extractDevice(userAgent);
 
 
-    const exixtingClick = await this.prisma.click.findUnique({
-      where:{
-        ipAddress_userAgent_urlId:{
-          ipAddress:ip,
-          userAgent,
-          urlId:url.id
-        }
-      }
-    })
 
-
-    if(!exixtingClick){
-      await this.prisma.click.create({
-        data:{
-          urlId:url.id,
-          ipAddress:ip,
-          userAgent
-        }
-      })
-    }
-      await this.prisma.analytics.upsert({
-        where:{urlId_osName_deviceName:{urlId:url.id,osName,deviceName}},
-        update:{uniqueVisits:{increment:1},lastAccessed:new Date()},
-        create:{
-          urlId:url.id,
-          uniqueVisits:1,
-          clicks:1,
-          lastAccessed:new Date(),
-          osName,
-          deviceName
-        }
-      })
-
+    await this.prisma.$transaction([
+      this.prisma.click.create({ data: { urlId: url.id, ipAddress: ip, userAgent } }),
+      this.prisma.analytics.upsert({
+        where: { urlId_osName_deviceName: { urlId: url.id, osName, deviceName } },
+        update: { clicks: { increment: 1 }, lastAccessed: new Date() },
+        create: { urlId: url.id, uniqueVisits: 1, clicks: 1, lastAccessed: new Date(), osName, deviceName },
+      }),]
+    )
     return `${url.longUrl}`
   }
 

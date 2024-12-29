@@ -1,37 +1,24 @@
 import { Injectable } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
 import { GoogleUserDto } from './dto/google-user.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private usersService: UsersService) {}
+  constructor(private prisma: PrismaService) {}
 
-  async validateOrCreateUser(userDto: GoogleUserDto): Promise<any> {
-    const existingUser = await this.usersService.findOneByGoogleId(
-      userDto.googleId,
-    );
+  async validateOrCreateUser(googleUser: GoogleUserDto): Promise<any> {
+    const existingUser = await this.prisma.user.findUnique({
+      where: { googleId:googleUser.googleId },include:{urls:true},
+    });
+
     if (existingUser) {
       return existingUser;
     } else {
-      const newUser = await this.usersService.createUser(userDto);
+      const newUser = await this.prisma.user.create({
+        data: googleUser,include:{urls:true}
+      });
       return newUser;
     }
   }
 
-  async validateGoogleUser(profile: GoogleUserDto): Promise<any> {
-    const { googleId, email, name } = profile;
-    let user = await this.usersService.findByEmail(email);
-    if (!user) {
-      user = await this.usersService.createUser({ googleId, email, name });
-    }
-    return user;
-  }
-
-  async validateLocalUser(email: string): Promise<any> {
-    const user = await this.usersService.findByEmail(email);
-    if (user) {
-      return user;
-    }
-    return null;
-  }
 }

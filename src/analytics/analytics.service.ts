@@ -24,7 +24,7 @@ export class AnalyticsService {
         clickCount:url.clicks.filter(click=>new Date(click.createdAt).toISOString().split('T')[0]===today.toISOString().split('T')[0]).length
       }
     });
-    const [osType,deviceType] = url.analytics.map(analytic=>{
+    const osTypeDeviceType = url.analytics.flatMap(analytic=>{
       const osName = analytic.osName
       const deviceName = analytic.deviceName
       return [{
@@ -38,6 +38,8 @@ export class AnalyticsService {
       }]
     })
 
+    const osType = osTypeDeviceType.filter(type=>type.osName)
+    const deviceType = osTypeDeviceType.filter(type=>type.deviceName)
     return {
       totalClicks,uniqueUser:uniqueClicks,clicksByDate:recent7DaysStats,osType,deviceType
     }
@@ -78,6 +80,55 @@ export class AnalyticsService {
   }
 
   async getOverallAnalytics() {
-    
+    const allUsers = await this.prisma.user.findMany({include:{urls:{include:{analytics:true,clicks:true}}}})
+    const usersStats = allUsers.map(user=>{
+      const analytics = user.urls.flatMap(url=>url.analytics)
+      const osTypeDeviceType = analytics.flatMap(analytic=>{
+        const currentOs = analytic.osName;
+        const currentDevice = analytic.deviceName
+        return [
+          {
+            osName:currentOs,
+            uniqueClicks:user.urls.flatMap(url=>url.analytics).reduce((prev,curr)=>prev+(curr.osName===currentOs?curr.clicks:0),0),
+            uniqueUsers:user.urls.flatMap(url=>url.analytics).reduce((prev,curr)=>prev+(curr.osName===currentOs?curr.uniqueVisits:0),0)
+          },
+          {
+            deviceName:analytic.deviceName,
+            uniqueClicks:user.urls.flatMap(url=>url.analytics).reduce((prev,curr)=>prev+(curr.deviceName===currentDevice?curr.clicks:0),0),
+            uniqueUsers:user.urls.flatMap(url=>url.analytics).reduce((prev,curr)=>prev+(curr.deviceName===currentDevice?curr.uniqueVisits:0),0)
+          }
+        ]
+      })
+      const osType = osTypeDeviceType.filter(type=>type.osName)
+      const deviceType = osTypeDeviceType.filter(type=>type.deviceName)
+      const currentUser = user.name;
+      return {
+        currentUser:currentUser,
+        states:{
+        totalUrls:user.urls.length,
+        totalClicks:user.urls.flatMap(url=>url.analytics).reduce((prev,curr)=>prev+curr.clicks,0),
+        uniqueUsers:new Set(user.urls.flatMap(url=>url.clicks).map(click=>click.ipAddress)).size,
+        clicksByDate:user.urls.flatMap((url)=>{
+          const createdAt = url.createdAt
+          const today = new Date()
+          const days = Math.floor(today.getDate()-createdAt.getDate())+1
+          return {url:url.longUrl,urlStats:Array.from({length:days}).map((_,idx)=>{
+            const date = new Date()
+            date.setDate(date.getDate()-idx)
+            const clickCount = url.clicks.filter(click=>click.createdAt.toISOString().split("T")[0]===date.toISOString().split("T")[0]).length||0;
+            return {
+              date:date.toISOString().split("T")[0],
+              clickCount
+            }
+          })}
+          
+        }),
+        osType,
+        deviceType
+
+      }
+    }
+  })
+  return usersStats
   }
 }
